@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.7.34221.43
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArduinoTranslator", "ArduinoTranslator.csproj", "{4F6B4F45-971A-421F-B3EA-A2CF74FB9308}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoShop-ArduinoTranslator", "AutoShop-ArduinoTranslator.csproj", "{4F6B4F45-971A-421F-B3EA-A2CF74FB9308}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
