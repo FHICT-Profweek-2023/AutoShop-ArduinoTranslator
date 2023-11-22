@@ -12,4 +12,4 @@ or
 
 ``Put`` returns void.
 
-``Get`` returns ``string`` of data like the example above.
+``Get`` returns ``string`` of data like the put example above.
