@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.Configuration;
+using System.Net;
 using System.Net.Sockets;
 using System.Text;
 
@@ -6,14 +7,12 @@ namespace ArduinoTranslator;
 
 internal static class Program
 {
-    // API Server url
-    private static readonly Uri Uri = new("http://192.168.160.53/api/controls/0");
-
     // Set the host and port to listen on
-//#error Enter IP Adress (comment this line when entered) !!!
-#warning Check IP Adress
-    private const string Host = "0.0.0.0"; // Listen on all available interfaces
-    private const int    Port = 2000;      // Choose a port number
+    private static IPAddress? _host; // Listen on all available interfaces
+    private static int        _port; // Choose a port number
+                                     
+    // API Server url
+    private static Uri? _apiServerUri;
 
     //private static int _count = 0;
 
@@ -21,15 +20,52 @@ internal static class Program
 
     private static async Task Start()
     {
+        _ = IPAddress.TryParse(ConfigurationManager.AppSettings.Get("ArduinoIp"), out _host);
+        _ = int.TryParse(ConfigurationManager.AppSettings.Get("ArduinoPort"), out _port);
+        _ = Uri.TryCreate(ConfigurationManager.AppSettings.Get("ApiUri"), UriKind.Absolute, out _apiServerUri);
+
+        var wrongIp = new IPAddress(new[] { byte.MinValue, byte.MinValue, byte.MinValue, byte.MinValue });
+
+        if (_host is null || _host.Equals(wrongIp))
+        {
+            Console.WriteLine("IP address not set!\nSet IP address and restart program.");
+            await Task.Delay(-1);
+            return;
+        }
+
+        if (_port <= 0)
+        {
+            Console.WriteLine("Port is not valid or not set!\nSet port and restart program.");
+            await Task.Delay(-1);
+            return;
+        }
+
+        if (_apiServerUri is null)
+        {
+            Console.WriteLine("Api server address is not valid or not set!\nSet address and restart program.");
+            await Task.Delay(-1);
+            return;
+        }
+
         // Create an IP endpoint
-        var endPoint = new IPEndPoint(IPAddress.Parse(Host), Port);
+        var endPoint = new IPEndPoint(_host, _port);
 
         // Create a TCP listener
         var listener = new TcpListener(endPoint);
 
         // Start listening for incoming connections
-        listener.Start();
-        Console.WriteLine($"Listening on {Host}:{Port}...");
+        try
+        {
+            listener.Start();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Details:\n{ex}\n\nSimple Message:\n{ex.Message}");
+            await Task.Delay(-1);
+            return;
+        }
+
+        Console.WriteLine($"Listening on {_host}:{_port}...");
 
         // ReSharper disable once AsyncVoidLambda
 
@@ -89,7 +125,7 @@ internal static class Program
 
         using var httpClient = new HttpClient();
 
-        var response = await httpClient.PutAsync(Uri, content);
+        var response = await httpClient.PutAsync(_apiServerUri, content);
         response.EnsureSuccessStatusCode();
 
         Console.WriteLine($"Put call made with: {content}");
@@ -99,7 +135,7 @@ internal static class Program
     {
         using var httpClient = new HttpClient();
 
-        var response = await httpClient.GetAsync(Uri);
+        var response = await httpClient.GetAsync(_apiServerUri);
         response.EnsureSuccessStatusCode();
 
         Console.WriteLine($"Get call made with: {await response.Content.ReadAsStringAsync()}");
