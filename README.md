@@ -8,6 +8,8 @@ or
 
 ``"get"``
 
-Put returns void.
+## Return Types:
 
-Get returns ``string`` of data like the example above.
+``Put`` returns void.
+
+``Get`` returns ``string`` of data like the example above.
